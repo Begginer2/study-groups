@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ group.name }} - Group Chat</title>
+</head>
+<body>
+    <h2>{{ group.name }} - Group Chat</h2>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+    <hr>
+    <h4>Messages</h4>
+    <div style="border:1px solid #ccc; padding:10px; max-width:600px;">
+        {% for msg in messages %}
+            <p><strong>{{ msg.user.name }}:</strong> {{ msg.content }} <small>({{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }})</small></p>
+        {% else %}
+            <p>No messages yet.</p>
+        {% endfor %}
+    </div>
+    <form method="post" style="margin-top:20px;">
+        <textarea name="content" rows="3" cols="60" placeholder="Type your message..." required></textarea><br>
+        <input type="submit" value="Send">
+    </form>
+</body>
+</html>

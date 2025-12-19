@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light"> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    {% if title %}
+        <title>Study Circle - {{ title }}</title>
+    {% else %}
+        <title>Study Circle</title>
+    {% endif %}
+</head>
+<body class="bg-light"> 
+    
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard' if current_user.is_authenticated else 'index') }}">
+                Study Circle
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="main-nav">
+                <ul class="navbar-nav ms-auto">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('profile') }}">Profile</a></li>
+
+                        {% if current_user.is_admin %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin_dashboard') }}" style="color: #ffc107;">Admin</a>
+                            </li>
+                        {% endif %}
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link" href="#" id="notificationBell" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-bell-fill"></i>
+                                <span id="notification-dot" class="position-absolute translate-middle p-1 bg-danger border border-light rounded-circle" style="display: none; top: 20px; margin-left: -2px;">
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="notificationBell" id="notification-list" style="min-width: 300px;">
+                                <li><a class="dropdown-item text-muted text-center" href="#">No new notifications</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('signup') }}">Sign Up</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container my-4"> 
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    {% block scripts %}
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
+    
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // --- Logic only for logged-in users ---
+            {% if current_user.is_authenticated %}
+                
+                // --- Connect to Socket.IO ---
+                var socket = io(); 
+
+                // --- NOTIFICATION BELL LOGIC (Added) ---
+                const notificationDot = document.getElementById('notification-dot');
+                const notificationList = document.getElementById('notification-list');
+                const bell = document.getElementById('notificationBell');
+
+                // 1. Listen for new notifications from the server
+                socket.on('receive_notification', function(data) {
+                    console.log('Notification received:', data);
+                    
+                    // Show the red dot
+                    if (notificationDot) notificationDot.style.display = 'block';
+
+                    // Remove the "No new notifications" placeholder
+                    const placeholder = notificationList.querySelector('a.text-muted');
+                    if (placeholder) placeholder.remove();
+
+                    // Create the new notification item
+                    const newItem = document.createElement('li');
+                    newItem.innerHTML = `<a class="dropdown-item" href="${data.url}"><small>${data.msg}</small></a>`;
+                    
+                    // Add the new item to the top of the list
+                    notificationList.prepend(newItem);
+                });
+
+                // 2. Clear the red dot when the bell is clicked
+                if (bell) {
+                    bell.addEventListener('click', function() {
+                        if (notificationDot) notificationDot.style.display = 'none';
+                    });
+                }
+                // --- END OF NOTIFICATION LOGIC ---
+
+                
+                // --- Bot Logic (Existing) ---
+                const botForm = document.getElementById('bot-form');
+                const botInput = document.getElementById('bot-input');
+                const chatDisplay = document.getElementById('bot-chat-display');
+
+                if (botForm) {
+                    botForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const userQuestion = botInput.value.trim();
+                        if (userQuestion === "") return;
+                        addMessageToChat('user', userQuestion);
+                        botInput.value = "";
+                        fetchBotResponse(userQuestion);
+                    });
+                }
+
+                function addMessageToChat(sender, message) {
+                    if (!chatDisplay) return;
+                    const messageDiv = document.createElement('div');
+                    messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+                    const messageP = document.createElement('p');
+                    messageP.textContent = message; // Use .textContent for security
+                    messageDiv.appendChild(messageP);
+                    chatDisplay.appendChild(messageDiv);
+                    chatDisplay.scrollTop = chatDisplay.scrollHeight;
+                }
+
+                async function fetchBotResponse(question) {
+                    try {
+                        const response = await fetch('/ask_bot', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 'question': question })
+                        });
+                        if (!response.ok) {
+                            addMessageToChat('bot', 'Sorry, an error occurred. Please try again.');
+                            return;
+                        }
+                        const data = await response.json();
+                        addMessageToChat('bot', data.answer);
+                    } catch (error) {
+                        console.error('Error fetching bot response:', error);
+                        addMessageToChat('bot', 'Sorry, I couldn\'t connect. Please check your connection.');
+                    }
+                }
+                // --- END OF BOT LOGIC ---
+            
+            {% endif %}
+            // --- End of authenticated user logic ---
+
+        });
+    </script>
+    {% endblock %}
+
+
+    {% if current_user.is_authenticated %}
+    <button class="btn btn-primary btn-lg rounded-circle shadow" id="floating-help-btn" data-bs-toggle="modal" data-bs-target="#botModal">
+        <i class="bi bi-robot"></i> </button>
+    
+    <div class="modal fade" id="botModal" tabindex="-1" aria-labelledby="botModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="botModalLabel">Study Circle Helper</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="bot-chat-display">
+                        <div class="bot-message">
+                            <p>Hi! I'm the Study Circle assistant. Ask me how to do things, like "how to create a group" or "how to share a file".</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <form id="bot-form" class="d-flex w-100">
+                        <input type="text" id="bot-input" class="form-control" placeholder="Ask a question..." autocomplete="off">
+                        <button type="submit" class="btn btn-primary ms-2">Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</body>
+</html>
