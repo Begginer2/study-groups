@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ group.name }} - {{ group.course }}</h2>
+<p>{{ group.description }}</p>
+<h5>Members:</h5>
+<ul>
+  {% for m in group.members %}
+    <li>{{ m.name }}</li>
+  {% endfor %}
+</ul>
+{% if current_user in group.members %}
+<a class="btn btn-danger" href="{{ url_for('leave_group', group_id=group.id) }}">Leave Group</a>
+{% else %}
+<a class="btn btn-primary" href="{{ url_for('join_group', group_id=group.id) }}">Join Group</a>
+{% endif %}
+{% endblock %}
