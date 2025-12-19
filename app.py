@@ -1,8 +1,9 @@
-
-
+import os
+from dotenv import load_dotenv
+load_dotenv()
 # --- Core Flask and Extensions ---
 from flask import Flask, render_template, redirect, url_for, flash, request, send_from_directory, jsonify   
-import os
+
 from werkzeug.utils import secure_filename 
 from functools import wraps
 import uuid
@@ -63,9 +64,8 @@ app.config['MAIL_PASSWORD'] = 'tvjxpxizwdte gpuf' # <-- PUT YOUR PASSWORD HERE
 app.config['MAIL_DEFAULT_SENDER'] = 'madhavi.cdk1234@gmail.com' # <-- PUT YOUR EMAIL HERE
 app.config['MAIL_DEFAULT_SENDER'] = 'madhavi.cdk1234@gmail.com'
 # --- GOOGLE OAUTH CONFIGURATION (ADD THIS) ---
-app.config['GOOGLE_CLIENT_ID'] = '895373802397-boan999hvq3h9nudtdruf0ui0e6uq70u.apps.googleusercontent.com'
-app.config['GOOGLE_CLIENT_SECRET'] = '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'
-
+app.config['GOOGLE_CLIENT_ID'] = os.environ.get('GOOGLE_CLIENT_ID')
+app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get('GOOGLE_CLIENT_SECRET')
 # --- UPLOAD FOLDER CONFIG (ADD THIS BLOCK) ---
 UPLOAD_FOLDER = os.path.join(basedir, 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
