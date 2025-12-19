@@ -1,0 +1,171 @@
+/* static/style.css */
+
+/* --- Tab Styles (Using Bootstrap Variables) --- */
+.tabs {
+    overflow: hidden;
+    border: 1px solid var(--bs-border-color);
+    background-color: var(--bs-body-bg); /* Use Bootstrap background */
+    border-radius: var(--bs-border-radius) var(--bs-border-radius) 0 0; /* Use Bootstrap radius */
+    margin-top: 1.5rem;
+    display: flex; /* Use flexbox for better alignment */
+}
+
+.tabs .tab-link {
+    background-color: inherit;
+    /* float: left; Removed for flexbox */
+    border: none;
+    border-right: 1px solid var(--bs-border-color); /* Add separators */
+    outline: none;
+    cursor: pointer;
+    padding: 0.75rem 1rem; /* Adjust padding */
+    transition: background-color 0.2s, color 0.2s;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--bs-nav-link-color); /* Use Bootstrap link color */
+    flex-grow: 1; /* Make tabs distribute space */
+    text-align: center;
+}
+.tabs .tab-link:last-child {
+    border-right: none; /* Remove border from last tab */
+}
+
+.tabs .tab-link:hover {
+    background-color: var(--bs-tertiary-bg); /* Use Bootstrap hover background */
+    color: var(--bs-primary);
+}
+
+.tabs .tab-link.active {
+    background-color: var(--bs-primary);
+    color: var(--bs-light); /* Use light text on primary background */
+    border-bottom: 2px solid var(--bs-primary); /* Style active tab */
+}
+
+.tab-content {
+    display: none;
+    padding: 1.5rem; /* Adjust padding */
+    border: 1px solid var(--bs-border-color);
+    border-top: none;
+    background-color: var(--bs-body-bg);
+    border-radius: 0 0 var(--bs-border-radius) var(--bs-border-radius);
+    min-height: 400px; /* Give tabs some minimum height */
+}
+
+/* Make the first tab (Chat) show by default */
+#Chat {
+    display: block;
+}
+
+/* Hide fields for resource form initially */
+#url_field, #file_field {
+    display: none;
+}
+
+
+/* --- Chat Message Styles (Refined) --- */
+.chat-wrapper, .resource-wrapper, .member-list {
+    border: none;
+    padding: 0;
+}
+
+#messages {
+    height: 400px; /* Keep fixed height */
+    overflow-y: auto;
+    padding: 1rem;
+    margin-bottom: 1rem; /* Space before input */
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    background-color: var(--bs-tertiary-bg); /* Light background for chat area */
+}
+.message {
+    margin-bottom: 0.75rem;
+    max-width: 75%; /* Slightly reduce max width */
+    clear: both; /* Ensure messages don't overlap */
+}
+.message strong {
+    display: block;
+    font-size: 0.8rem; /* Smaller username */
+    color: var(--bs-secondary-color); /* Muted username color */
+    margin-bottom: 0.1rem;
+}
+.message p {
+    margin: 0;
+    padding: 0.5rem 0.8rem; /* Adjust padding */
+    border-radius: 15px; /* More rounded bubbles */
+    display: inline-block;
+    word-wrap: break-word; /* Ensure long words wrap */
+}
+.other-message {
+    float: left;
+}
+.other-message p {
+    background-color: var(--bs-light); /* Lighter gray for others */
+    border: 1px solid var(--bs-border-color);
+    color: var(--bs-body-color);
+}
+.my-message {
+    float: right;
+}
+.my-message strong {
+    text-align: right; /* Align username right for own messages */
+}
+.my-message p {
+    background-color: var(--bs-primary);
+    color: var(--bs-light);
+}
+
+/* Chat form styling is handled by Bootstrap classes in HTML */
+#chat-form {
+    margin-top: 0; /* Remove default margin if using gap */
+}
+/* --- BOT STYLES --- */
+
+/* 1. The Floating Button */
+#floating-help-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1030; /* Just below modals */
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+}
+
+/* 2. The Chat Display Area */
+#bot-chat-display {
+    height: 400px;
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: #f8f9fa; /* Light gray background */
+    border-radius: var(--bs-border-radius);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* 3. Bot Message Bubbles */
+.bot-message {
+    align-self: flex-start;
+    max-width: 80%;
+}
+.bot-message p {
+    margin: 0;
+    padding: 0.5rem 0.8rem;
+    border-radius: 15px;
+    background-color: #e9ecef; /* Gray bubble */
+    color: #000;
+    word-wrap: break-word;
+}
+
+/* 4. User Message Bubbles */
+.user-message {
+    align-self: flex-end; /* Aligns to the right */
+    max-width: 80%;
+}
+.user-message p {
+    margin: 0;
+    padding: 0.5rem 0.8rem;
+    border-radius: 15px;
+    background-color: var(--bs-primary); /* Blue bubble */
+    color: #fff;
+    word-wrap: break-word;
+}

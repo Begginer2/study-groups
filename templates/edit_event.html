@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6 col-md-8 mx-auto">
+        <div class="card shadow-sm p-4">
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('edit_event', event_id=event.id) }}">
+                    {{ form.hidden_tag() }} {# CSRF token #}
+                    <fieldset>
+                        <legend class="text-center h3 mb-4">Edit Event</legend>
+
+                        {# Event Title #}
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control") }}
+                            {% if form.title.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.title.errors %}<span>{{ error }}</span>{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {# Event Description #}
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control", rows="3") }}
+                            {% if form.description.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.description.errors %}<span>{{ error }}</span>{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {# Date and Time Inputs - In a Row for side-by-side layout #}
+                        <div class="row">
+                             <div class="col-md-6 mb-3"> {# Date Input #}
+                                {{ form.event_date.label(class="form-label") }}
+                                {{ form.event_date(class="form-control", type="date") }}
+                                 {% if form.event_date.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.event_date.errors %}<span>{{ error }}</span>{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3"> {# Time Input #}
+                                {{ form.event_time.label(class="form-label") }}
+                                {{ form.event_time(class="form-control", type="time") }}
+                                 {% if form.event_time.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.event_time.errors %}<span>{{ error }}</span>{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div> {# End of row for date/time #}
+
+                    </fieldset>
+
+                    {# Buttons #}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                         {# Link back to the group page #}
+                        <a href="{{ url_for('group_detail', group_id=event.group_id) }}" class="btn btn-outline-secondary">Cancel</a>
+                        {# Submit Button #}
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
