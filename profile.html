@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6 col-md-8 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="text-center h3 mb-4">My Profile</h2>
+                <div class="profile-info mb-3">
+                    <p><strong>Username:</strong> {{ current_user.username }}</p>
+                    <p class="mb-0"><strong>Email:</strong> {{ current_user.email }}</p>
+                </div>
+
+                <hr class="my-4">
+                <h3>Update Your Interests</h3>
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }} <div class="mb-3">
+                        {{ form.interested_subjects.label(class="form-label") }}
+                        <small class="form-text text-muted d-block mb-1">Enter subjects separated by commas.</small>
+                        {{ form.interested_subjects(class="form-control", rows="3", placeholder="e.g., Calculus, Python Programming, World History") }}
+                        {% if form.interested_subjects.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.interested_subjects.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+                <hr class="my-4">
+
+                <h3>My Groups</h3>
+                {% if current_user.joined_groups %}
+                    <ul class="list-group list-group-flush">
+                        {% for group in current_user.joined_groups %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <a href="{{ url_for('group_detail', group_id=group.id) }}">{{ group.name }}</a>
+                                {% if group.creator == current_user %}
+                                    <span class="badge bg-primary rounded-pill">Creator</span>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">You are not a member of any groups.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

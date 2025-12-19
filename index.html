@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="p-5 mb-4 bg-body-tertiary rounded-3 shadow-sm text-center">
+        <div class="container-fluid py-5">
+            <h1 class="display-4 fw-bold">Welcome to Study Circle</h1>
+            <h2 class="h4 mt-3">A web-based collaborative study group platform.</h2>
+            <p class="fs-4 col-md-10 mx-auto text-muted">The easiest way to find, create, and collaborate with study groups for your courses.</p>
+            <a href="{{ url_for('signup') }}" class="btn btn-primary btn-lg mt-3">Get Started</a>
+        </div>
+    </div>
+{% endblock content %}
