@@ -65,11 +65,13 @@
 
                 <hr>
 
+                {% if google_oauth_enabled %}
                 <div class="d-grid">
                     <a href="{{ url_for('google_login') }}" class="btn btn-danger">
                         Sign up with Google
                     </a>
                 </div>
+                {% endif %}
 
                 <div class="text-center mt-3">
                     <small class="text-muted">Already have an account? <a href="{{ url_for('login') }}">Log In</a></small>

@@ -39,12 +39,14 @@
                     </form>
                     
                     <hr>
-                    
+
+                    {% if google_oauth_enabled %}
                     <div class="d-grid">
                          <a href="{{ url_for('google_login') }}" class="btn btn-danger">
                             Sign in with Google
                         </a>
                     </div>
+                    {% endif %}
             
                     <div class="text-center mt-3">
                         <small><a href="{{ url_for('forgot_password') }}">Forgot Password?</a></small>

@@ -35,6 +35,12 @@ from forms import (
 
 # --- APP CONFIGURATION ---
 
+def env_flag(name, default=False):
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {'1', 'true', 'yes', 'on'}
+
 # Get the absolute path for the directory where this file (app.py) is
 basedir = os.path.abspath(os.path.dirname(__file__))
 # Define the path for the 'instance' folder
@@ -49,20 +55,19 @@ if not os.path.exists(instance_path):
         print(f"Error creating instance directory: {e}")
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'a_very_secret_key_that_you_should_change'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
 # --- This is the modified line: ---
 # Set the database URI to an absolute path inside the 'instance' folder
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(instance_path, 'site.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # --- MAIL SERVER CONFIGURATION (ADD THIS ENTIRE BLOCK) ---
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'madhavi.cdk1234@gmail.com'  # <-- PUT YOUR EMAIL HERE
-app.config['MAIL_PASSWORD'] = 'REMOVED_MAIL_PASSWORD' # <-- PUT YOUR PASSWORD HERE
-app.config['MAIL_DEFAULT_SENDER'] = 'madhavi.cdk1234@gmail.com' # <-- PUT YOUR EMAIL HERE
-app.config['MAIL_DEFAULT_SENDER'] = 'madhavi.cdk1234@gmail.com'
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = env_flag('MAIL_USE_TLS', True)
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
 # --- GOOGLE OAUTH CONFIGURATION (ADD THIS) ---
 app.config['GOOGLE_CLIENT_ID'] = os.environ.get('GOOGLE_CLIENT_ID')
 app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get('GOOGLE_CLIENT_SECRET')
@@ -80,6 +85,10 @@ login_manager = LoginManager(app)
 socketio = SocketIO(app)
 
 mail = Mail(app)  # <-- ADD THIS LINE
+
+google_oauth_enabled = bool(
+    app.config.get('GOOGLE_CLIENT_ID') and app.config.get('GOOGLE_CLIENT_SECRET')
+)
 
 # --- TOKEN SERIALIZER (ADD THIS LINE) ---
 s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -105,6 +114,10 @@ google = oauth.register(
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 
+@app.context_processor
+def inject_feature_flags():
+    return {'google_oauth_enabled': google_oauth_enabled}
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -126,6 +139,9 @@ def admin_required(f):
 @app.route('/google/login')
 def google_login():
     """Redirects to Google's OAuth login page."""
+    if not google_oauth_enabled:
+        flash('Google login is not configured for this deployment.', 'warning')
+        return redirect(url_for('login'))
     # The 'google' name must match what we registered with oauth
     redirect_uri = url_for('google_callback', _external=True)
     return oauth.google.authorize_redirect(redirect_uri)
@@ -134,6 +150,9 @@ def google_login():
 @app.route('/google/callback')
 def google_callback():
     """Handles the response from Google after login."""
+    if not google_oauth_enabled:
+        flash('Google login is not configured for this deployment.', 'warning')
+        return redirect(url_for('login'))
     try:
         token = oauth.google.authorize_access_token()
     except Exception as e:
@@ -194,7 +213,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-        if user and bcrypt.check_password_hash(user.password_hash, form.password.data):
+        if user and user.password_hash and bcrypt.check_password_hash(user.password_hash, form.password.data):
             login_user(user)
             next_page = request.args.get('next')
             flash('Login successful!', 'success')

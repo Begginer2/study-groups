@@ -1,3 +1,7 @@
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+instance/site.db
+uploads/
 .env
-# Created by pytest automatically.
-*

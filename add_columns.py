@@ -2,9 +2,10 @@
 import sqlite3
 from pathlib import Path
 
-db_path = Path('studygroup.db')
+project_root = Path(__file__).resolve().parent
+db_path = project_root / 'instance' / 'site.db'
 if not db_path.exists():
-    print("No studygroup.db found in current folder.")
+    print(f"No database found at: {db_path}")
     raise SystemExit(1)
 
 con = sqlite3.connect(str(db_path))
